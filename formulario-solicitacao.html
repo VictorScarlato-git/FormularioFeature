@@ -128,6 +128,44 @@
       padding-right: 2.25rem;
     }
 
+    input[type="file"] {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: #0f172a;
+      background: #ffffff;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="file"]:focus {
+      outline: none;
+      border-color: #00b4d8;
+      box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);
+    }
+
+    input[type="file"]::file-selector-button {
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      font-weight: 600;
+      color: #0891b2;
+      background: #ecfeff;
+      border: 1.5px solid #00b4d8;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 0.75rem;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+      background: #00b4d8;
+      color: #ffffff;
+    }
+
     #outroContainer {
       margin-top: 0.5rem;
       display: none;
@@ -320,7 +358,7 @@
         A prioridade final será definida pelo time de Tecnologia e pelo Negócio.
       </p>
 
-      <form id="featureForm" action="https://formsubmit.co/produtotech@justtraveltour.com" method="POST" novalidate>
+      <form id="featureForm" action="https://formsubmit.co/produtotech@justtraveltour.com" method="POST" enctype="multipart/form-data" novalidate>
         <input type="hidden" name="_subject" value="Nova solicitação de funcionalidade">
         <input type="hidden" name="_template" value="table">
         <input type="hidden" name="_captcha" value="false">
@@ -374,7 +412,15 @@
           <span class="error-msg">Justifique com pelo menos 30 caracteres.</span>
         </div>
 
-        <!-- 5. Prioridade -->
+        <!-- 5. Anexos -->
+        <div class="field" id="fieldAnexo">
+          <label for="anexo">Anexos</label>
+          <span class="hint">Anexe documentos em pdf, jpeg ou png (máximo 10 MB no total)</span>
+          <input type="file" id="anexo" name="attachment" accept=".pdf,.jpg,.jpeg,.png" multiple>
+          <span class="error-msg">O tamanho total dos arquivos excede 10 MB.</span>
+        </div>
+
+        <!-- 6. Prioridade -->
         <div class="field" id="fieldPrioridade">
           <label>Prioridade sugerida <span class="required">*</span></label>
           <span class="hint">A prioridade final será definida pelo time de Produto/Gestão.</span>
@@ -473,6 +519,12 @@
 
       const justificativa = document.getElementById('justificativa');
       ok = validateField('fieldJustificativa', justificativa.value.trim().length >= 30) && ok;
+
+      const anexo = document.getElementById('anexo');
+      const maxSize = 10 * 1024 * 1024;
+      let totalSize = 0;
+      for (const file of anexo.files) totalSize += file.size;
+      ok = validateField('fieldAnexo', totalSize <= maxSize) && ok;
 
       const prioChecked = form.querySelector('input[name="prioridade"]:checked');
       ok = validateField('fieldPrioridade', !!prioChecked) && ok;
