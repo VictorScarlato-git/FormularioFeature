@@ -320,7 +320,11 @@
         A prioridade final será definida pelo time de Produto.
       </p>
 
-      <form id="featureForm" novalidate>
+      <form id="featureForm" action="https://formsubmit.co/victor.scarlato@justtraveltour.com" method="POST" novalidate>
+        <input type="hidden" name="_subject" value="Nova solicitação de funcionalidade">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_next" id="nextUrl" value="">
 
         <!-- 1. Nome -->
         <div class="field" id="fieldNome">
@@ -439,6 +443,15 @@
     const successMsg = document.getElementById('successMsg');
     const btnNova = document.getElementById('btnNova');
 
+    document.getElementById('nextUrl').value =
+      window.location.origin + window.location.pathname + '?enviado=1';
+
+    if (new URLSearchParams(window.location.search).has('enviado')) {
+      form.style.display = 'none';
+      document.querySelector('.intro').style.display = 'none';
+      successMsg.style.display = 'block';
+    }
+
     areaSelect.addEventListener('change', () => {
       outroContainer.style.display = areaSelect.value === 'Outro' ? 'block' : 'none';
     });
@@ -450,7 +463,6 @@
     }
 
     form.addEventListener('submit', (e) => {
-      e.preventDefault();
       let ok = true;
 
       const nome = document.getElementById('nome');
@@ -467,36 +479,19 @@
       const prioChecked = form.querySelector('input[name="prioridade"]:checked');
       ok = validateField('fieldPrioridade', !!prioChecked) && ok;
 
-      if (!ok) return;
+      if (!ok) {
+        e.preventDefault();
+        return;
+      }
 
-      const data = {
-        nome: nome.value.trim(),
-        area: areaSelect.value === 'Outro'
-          ? document.getElementById('outraArea').value.trim() || 'Outro'
-          : areaSelect.value,
-        demanda: demanda.value.trim(),
-        justificativa: justificativa.value.trim(),
-        prioridade: prioChecked.value,
-        dataEnvio: new Date().toISOString()
-      };
-
-      console.log('Solicitação recebida:', data);
-
-      // TODO: substituir pelo envio real (fetch para API, planilha, etc.)
-      // fetch('/api/solicitacoes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-
-      form.style.display = 'none';
-      document.querySelector('.intro').style.display = 'none';
-      successMsg.style.display = 'block';
+      if (areaSelect.value === 'Outro') {
+        const outra = document.getElementById('outraArea').value.trim();
+        if (outra) areaSelect.value = outra;
+      }
     });
 
     btnNova.addEventListener('click', () => {
-      form.reset();
-      outroContainer.style.display = 'none';
-      document.querySelectorAll('.field').forEach(f => f.classList.remove('invalid'));
-      form.style.display = 'block';
-      document.querySelector('.intro').style.display = 'block';
-      successMsg.style.display = 'none';
+      window.location.href = window.location.origin + window.location.pathname;
     });
   </script>
 </body>
