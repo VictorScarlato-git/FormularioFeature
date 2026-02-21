@@ -166,6 +166,55 @@
       color: #ffffff;
     }
 
+    .anexo-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .anexo-row input[type="file"] {
+      flex: 1;
+    }
+
+    .btn-remove-anexo {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      font-size: 1.2rem;
+      line-height: 1;
+      font-family: inherit;
+      color: #ef4444;
+      background: #fef2f2;
+      border: 1.5px solid #fecaca;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-remove-anexo:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .btn-add-anexo {
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      font-weight: 600;
+      color: #0891b2;
+      background: transparent;
+      border: 1.5px dashed #00b4d8;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-add-anexo:hover {
+      background: #ecfeff;
+    }
+
     #outroContainer {
       margin-top: 0.5rem;
       display: none;
@@ -414,9 +463,15 @@
 
         <!-- 5. Anexos -->
         <div class="field" id="fieldAnexo">
-          <label for="anexo">Anexos</label>
+          <label>Anexos</label>
           <span class="hint">Anexe documentos em pdf, jpeg ou png (máximo 10 MB no total)</span>
-          <input type="file" id="anexo" name="attachment" accept=".pdf,.jpg,.jpeg,.png" multiple>
+          <div id="anexoList">
+            <div class="anexo-row">
+              <input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png">
+              <button type="button" class="btn-remove-anexo" title="Remover" style="display:none">&times;</button>
+            </div>
+          </div>
+          <button type="button" id="btnAddAnexo" class="btn-add-anexo">+ Adicionar outro arquivo</button>
           <span class="error-msg">O tamanho total dos arquivos excede 10 MB.</span>
         </div>
 
@@ -500,6 +555,38 @@
       outroContainer.style.display = areaSelect.value === 'Outro' ? 'block' : 'none';
     });
 
+    const anexoList = document.getElementById('anexoList');
+    const btnAddAnexo = document.getElementById('btnAddAnexo');
+    let anexoCount = 1;
+
+    function updateRemoveButtons() {
+      const rows = anexoList.querySelectorAll('.anexo-row');
+      rows.forEach(row => {
+        row.querySelector('.btn-remove-anexo').style.display = rows.length > 1 ? 'block' : 'none';
+      });
+    }
+
+    btnAddAnexo.addEventListener('click', () => {
+      anexoCount++;
+      const row = document.createElement('div');
+      row.className = 'anexo-row';
+      const suffix = anexoCount === 2 ? '' : anexoCount - 1;
+      const name = anexoCount === 1 ? 'attachment' : 'attachment' + anexoCount;
+      row.innerHTML = `<input type="file" name="${name}" accept=".pdf,.jpg,.jpeg,.png">` +
+        `<button type="button" class="btn-remove-anexo" title="Remover">&times;</button>`;
+      row.querySelector('.btn-remove-anexo').addEventListener('click', () => {
+        row.remove();
+        updateRemoveButtons();
+      });
+      anexoList.appendChild(row);
+      updateRemoveButtons();
+    });
+
+    anexoList.querySelector('.btn-remove-anexo').addEventListener('click', function() {
+      this.closest('.anexo-row').remove();
+      updateRemoveButtons();
+    });
+
     function validateField(fieldId, isValid) {
       const el = document.getElementById(fieldId);
       el.classList.toggle('invalid', !isValid);
@@ -520,10 +607,12 @@
       const justificativa = document.getElementById('justificativa');
       ok = validateField('fieldJustificativa', justificativa.value.trim().length >= 30) && ok;
 
-      const anexo = document.getElementById('anexo');
+      const fileInputs = anexoList.querySelectorAll('input[type="file"]');
       const maxSize = 10 * 1024 * 1024;
       let totalSize = 0;
-      for (const file of anexo.files) totalSize += file.size;
+      fileInputs.forEach(input => {
+        for (const file of input.files) totalSize += file.size;
+      });
       ok = validateField('fieldAnexo', totalSize <= maxSize) && ok;
 
       const prioChecked = form.querySelector('input[name="prioridade"]:checked');
