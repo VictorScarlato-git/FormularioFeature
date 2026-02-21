@@ -623,26 +623,53 @@
         return;
       }
 
+      e.preventDefault();
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+
       const area = areaSelect.value === 'Outro'
         ? (document.getElementById('outraArea').value.trim() || 'Outro')
         : areaSelect.value;
 
-      fetch('https://script.google.com/macros/s/AKfycbxJ_masv8GKPUe54E7IrkRiQi1qt6woACq6OwSid9ZBySyEfnRlTsfjl2iudbF4lXUvUQ/exec', {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: nome.value.trim(),
-          area: area,
-          demanda: demanda.value.trim(),
-          justificativa: justificativa.value.trim(),
-          prioridade: prioChecked.value
-        })
+      const fileInputs = anexoList.querySelectorAll('input[type="file"]');
+      const filePromises = [];
+      fileInputs.forEach(input => {
+        for (const file of input.files) {
+          filePromises.push(new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => resolve({
+              name: file.name,
+              type: file.type,
+              base64: reader.result.split(',')[1]
+            });
+            reader.readAsDataURL(file);
+          }));
+        }
       });
 
-      if (areaSelect.value === 'Outro') {
-        areaSelect.value = area;
-      }
+      Promise.all(filePromises).then(anexos => {
+        return fetch('https://script.google.com/macros/s/AKfycbxJ_masv8GKPUe54E7IrkRiQi1qt6woACq6OwSid9ZBySyEfnRlTsfjl2iudbF4lXUvUQ/exec', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            nome: nome.value.trim(),
+            area: area,
+            demanda: demanda.value.trim(),
+            justificativa: justificativa.value.trim(),
+            prioridade: prioChecked.value,
+            anexos: anexos
+          })
+        });
+      }).then(() => {
+        if (areaSelect.value === 'Outro') areaSelect.value = area;
+        form.submit();
+      }).catch(() => {
+        if (areaSelect.value === 'Outro') areaSelect.value = area;
+        form.submit();
+      });
     });
 
     btnNova.addEventListener('click', () => {
