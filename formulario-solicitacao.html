@@ -633,7 +633,6 @@
         ? (document.getElementById('outraArea').value.trim() || 'Outro')
         : areaSelect.value;
 
-      const fileInputs = anexoList.querySelectorAll('input[type="file"]');
       const filePromises = [];
       fileInputs.forEach(input => {
         for (const file of input.files) {
