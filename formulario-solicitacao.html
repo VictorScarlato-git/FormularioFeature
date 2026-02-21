@@ -623,9 +623,25 @@
         return;
       }
 
+      const area = areaSelect.value === 'Outro'
+        ? (document.getElementById('outraArea').value.trim() || 'Outro')
+        : areaSelect.value;
+
+      fetch('https://script.google.com/macros/s/AKfycbxJ_masv8GKPUe54E7IrkRiQi1qt6woACq6OwSid9ZBySyEfnRlTsfjl2iudbF4lXUvUQ/exec', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: nome.value.trim(),
+          area: area,
+          demanda: demanda.value.trim(),
+          justificativa: justificativa.value.trim(),
+          prioridade: prioChecked.value
+        })
+      });
+
       if (areaSelect.value === 'Outro') {
-        const outra = document.getElementById('outraArea').value.trim();
-        if (outra) areaSelect.value = outra;
+        areaSelect.value = area;
       }
     });
 
